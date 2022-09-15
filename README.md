@@ -82,6 +82,20 @@ pip install -r requirements.txt
 ```
 Apart from this the [Detectron 2](https://github.com/facebookresearch/detectron2) package is needed for processing the masks from the image.
 
+Installation may require you to have a certion version of pytorch with Cuda 11.6
+
+Make sure you have Cuda 11.6 on your computer to check which version of Cuda you have run the commands in terminal
+
+Option 1: nvcc --version
+
+Option 2: nvidia-smi
+
+Option 3: $ python3
+          $ import torch  
+          $ print(torch.__version__)
+
+
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
