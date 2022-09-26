@@ -110,7 +110,9 @@ roslaunch yolov7_ros yolo-v7.launch
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
+<!-- Runtime Errors -->
+## Runtime Errors
+If you encounter a pytorch error during runtime in `upsampling.py`, go to the `forward()` method and remove "recompute_scale_factor=self.recompute_scale_factor".
 
 <!-- ROADMAP -->
 ## Roadmap
