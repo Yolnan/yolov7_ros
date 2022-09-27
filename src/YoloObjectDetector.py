@@ -17,6 +17,7 @@ from yolov7_ros.msg import ObjectData, DetectionDataArray
 from cv_bridge import CvBridge
 import rospy
 from sensor_msgs.msg import Image
+import time
 
 class YoloObjectDetector:
     def __init__(self, opt):
@@ -30,10 +31,11 @@ class YoloObjectDetector:
         self.model.eval()
         self.bridge = CvBridge()
         rospy.Subscriber(opt.sub_topic,Image,self.cam_callback)
-        self.img_pub = rospy.Publisher('yolov7/Image',Image,queue_size=1)
         self.detection_pub = rospy.Publisher('yolov7/Detection',DetectionDataArray,queue_size=1)
         self.rate = rospy.Rate(30)
         self.detection_data = DetectionDataArray()
+        if opt.viz:
+            self.img_pub = rospy.Publisher('yolov7/Image',Image,queue_size=1)
   
     def image_processor(self,image,output):
         inf_out, train_out, attn, mask_iou, bases, sem_output = output['test'], output['bbox_and_cls'], output['attn'], output['mask_iou'], output['bases'], output['sem']
@@ -47,6 +49,7 @@ class YoloObjectDetector:
 
         # print(self.output)
         if self.output[0]!=None:
+            
             pred, pred_masks = self.output[0], output_mask[0]
             base = bases[0]
             bboxes = Boxes(pred[:, :4])
@@ -77,7 +80,7 @@ class YoloObjectDetector:
 
                 self.detection_data.objects += (obj_data,)
                 if opt.viz:
-                    color = [np.random.randint(255), np.random.randint(255), np.random.randint(255)]                                                  
+                    color = [255,0,0] #[np.random.randint(255), np.random.randint(255), np.random.randint(255)]                                                  
                     pnimg[one_mask] = pnimg[one_mask] * 0.5 + np.array(color, dtype=np.uint8) * 0.5
                     pnimg = cv2.rectangle(pnimg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
                     label = '%s %.3f' % (names[int(cls)], conf)
@@ -85,7 +88,9 @@ class YoloObjectDetector:
                     c2 = bbox[0] + t_size[0], bbox[1] - t_size[1] - 3
                     pnimg = cv2.rectangle(pnimg, (bbox[0], bbox[1]), c2, color, -1, cv2.LINE_AA)  # filled
                     pnimg = cv2.putText(pnimg, label, (bbox[0], bbox[1] - 2), 0, 0.5, [255, 255, 255], thickness=1, lineType=cv2.LINE_AA)
-
+            
+            pnimg = cv2.cvtColor(pnimg,cv2.COLOR_BGR2RGB)
+            
             self.publisher(pnimg)
 
             
@@ -93,12 +98,15 @@ class YoloObjectDetector:
     def cam_callback(self,msg):
         self.source_image = msg
         image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-        image = letterbox(image, 640, stride=64, auto=True)[0]
+        
+        # image = letterbox(image, 640, stride=64, auto=True)[0]
         image = transforms.ToTensor()(image)
         image = image.unsqueeze(0)
         image = image.to(self.device)
         image = image.half()
+        
         output = self.model(image)
+        
         self.detection_data = DetectionDataArray()
         self.image_processor(image,output)
     
@@ -123,8 +131,13 @@ if __name__ == "__main__":
     parser.add_argument('--model_param_file', type=str)
     parser.add_argument('--hyp_file', type=str)
     parser.add_argument('--sub_topic', type=str)
-    parser.add_argument('--viz',type=bool, default=False)
-    opt, _  = parser.parse_known_args()
+    parser.add_argument('--viz',type=str, default=0)
+    opt, _  = parser.parse_known_args()   
+    if opt.viz=='1':
+        opt.viz=True
+    else:
+        opt.viz=False
+
 
     detector = YoloObjectDetector(opt)
     rospy.spin()

@@ -5,7 +5,7 @@
     <!-- <arg name="model_param_file" default="yolov7-mask.yaml"/> -->
     <arg name="hyp_file" default="hyp.scratch.mask.yaml"/>
     <arg name="sub_topic" default="/camera/color/image_raw"/>
-    <arg name="viz" default="False"/>
+    <arg name="viz" default="0"/>
 
     <node pkg="yolov7_ros" type="YoloObjectDetector.py" name="Yolov7Detector" output="screen" args="--root_dir $(arg root_dir)  --hyp_file $(arg hyp_file) --sub_topic $(arg sub_topic) --viz $(arg viz)"/>
     
