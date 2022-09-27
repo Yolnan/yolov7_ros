@@ -99,7 +99,8 @@ class YoloObjectDetector:
         self.source_image = msg
         image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         
-        # image = letterbox(image, 640, stride=64, auto=True)[0]
+        if (image.shape[0] !=480 or image.shape[1]!=640):
+            image = letterbox(image, 640, stride=64, auto=True)[0]
         image = transforms.ToTensor()(image)
         image = image.unsqueeze(0)
         image = image.to(self.device)
