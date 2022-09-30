@@ -66,7 +66,7 @@ class YoloObjectDetector:
             obj_data:ObjectData
 
             for one_mask, bbox, cls, conf in zip(pred_masks_np, nbboxes, pred_cls, pred_conf):
-                if conf < 0.25:
+                if conf < .5:
                     continue
                 obj_data = ObjectData()
                 obj_data.label = names[int(cls)]
@@ -80,7 +80,12 @@ class YoloObjectDetector:
 
                 self.detection_data.objects += (obj_data,)
                 if opt.viz:
-                    color = [255,0,0] #[np.random.randint(255), np.random.randint(255), np.random.randint(255)]                                                  
+                    if obj_data.label == "person":
+
+                        color = [0,0,255] #[np.random.randint(255), np.random.randint(255), np.random.randint(255)] 
+                    else:
+                        color = [255,0,0] #[np.random.randint(255), np.random.randint(255), np.random.randint(255)] 
+
                     pnimg[one_mask] = pnimg[one_mask] * 0.5 + np.array(color, dtype=np.uint8) * 0.5
                     pnimg = cv2.rectangle(pnimg, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
                     label = '%s %.3f' % (names[int(cls)], conf)
